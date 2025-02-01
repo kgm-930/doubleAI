@@ -7,8 +7,20 @@ function App() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // 여기에 API 호출 로직을 추가할 예정입니다.
-    setResponse(`You asked: ${input}`);
+    try{
+      const res = await fetch('http://localhost:8080/api/chat/ask',{
+        method: 'POST',
+        headers: {
+          'Content-Type' : 'application/json',
+        },
+        body:JSON.stringify(input),
+      });
+      const data = await res.text();
+      setResponse(data);
+    } catch (error){
+      console.error('Error : ', error);
+    }
+
     setInput('');
   };
 
