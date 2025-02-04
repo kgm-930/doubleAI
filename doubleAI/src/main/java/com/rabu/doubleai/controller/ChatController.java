@@ -8,7 +8,6 @@ public class ChatController {
 
     @PostMapping("/ask")
     public String askQuestion(@RequestBody String question){
-
         return "당신은 " + question;
     }
 }
