@@ -25,6 +25,7 @@ public class SecurityConfig {
         return (web) -> web.ignoring().requestMatchers("/api/user/register", "/api/user/login"); // 예외처리할 URL들
     }
 
+    // 패스워드 인코딩
     @Bean
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
@@ -34,29 +35,27 @@ public class SecurityConfig {
     @Bean
     protected SecurityFilterChain webSecurityFilterChain(HttpSecurity http) throws Exception {
         http
-                .authorizeHttpRequests()
-                .requestMatchers("/api/user/register", "/api/user/login", "/css/**", "/images/**", "/js/**").permitAll() // 회원가입, 로그인 등은 인증 없이 접근 가능
-                .anyRequest().authenticated() // 그 외 요청은 인증 필요
-
+                .authorizeRequests()
+                // /api/user/register, /api/user/login은 누구나 접근 가능
+                .requestMatchers("/api/user/register", "/api/user/login").permitAll()
+                // 그 외의 요청은 인증이 필요
+                .anyRequest().authenticated()
                 .and()
                 .formLogin()
-                .loginPage("/login") // 로그인 페이지 URL
+                .loginPage("/login")  // 로그인 페이지 URL
                 .loginProcessingUrl("/api/user/login") // 실제 로그인 처리 URL
                 .permitAll() // 로그인 페이지와 처리 URL은 모두 인증 없이 접근 가능
                 .successHandler(new CustomAuthenticationSuccessHandler()) // 로그인 성공 후 핸들러
                 .failureHandler(new CustomAuthenticationFailureHandler()) // 로그인 실패 후 핸들러
-
                 .and()
                 .sessionManagement()
                 .invalidSessionUrl("/login") // 세션이 유효하지 않은 경우 로그인 페이지로 리디렉션
-
                 .and()
                 .logout()
                 .logoutRequestMatcher(new AntPathRequestMatcher("/api/user/logout")) // 로그아웃 URL
                 .invalidateHttpSession(true)
                 .deleteCookies("JSESSIONID")
                 .permitAll()
-
                 .and()
                 .csrf()
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()); // CSRF 설정
