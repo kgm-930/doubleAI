@@ -4,10 +4,12 @@ const Login = () => {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [loginError, setLoginError] = useState(""); // 로그인 실패 메시지 상태 추가
+    const [loading, setLoading] = useState(false); // 로딩 상태 추가
 
     const handleLogin = async (e) => {
         e.preventDefault();
         const user = { username, password };
+        setLoading(true); // 로그인 요청 시 로딩 시작
 
         try {
             const res = await fetch('http://localhost:8080/api/user/login', {
@@ -21,10 +23,11 @@ const Login = () => {
             const data = await res.text();
             if (res.ok) {
                 // 로그인 성공 시 JWT 저장
-                const token = data;
-                localStorage.setItem('token', token);
+                localStorage.setItem('token', data);
                 alert('로그인 성공');
                 setLoginError(""); // 로그인 실패 메시지 초기화
+                setUsername(""); // 로그인 후 사용자명 초기화
+                setPassword(""); // 로그인 후 비밀번호 초기화
             } else {
                 setLoginError(data); // 로그인 실패 메시지 저장
             }
@@ -32,6 +35,7 @@ const Login = () => {
             console.error('Error:', error);
             setLoginError("로그인 중 문제가 발생했습니다."); // 네트워크 에러 처리
         }
+        setLoading(false); // 로그인 요청 후 로딩 종료
     };
 
     return (
@@ -52,7 +56,9 @@ const Login = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     style={styles.input}
                 />
-                <button type="submit" style={styles.button}>로그인</button>
+                <button type="submit" style={styles.button} disabled={loading}>
+                    {loading ? "로딩 중..." : "로그인"} {/* 로딩 상태에 따라 버튼 텍스트 변경 */}
+                </button>
             </form>
 
             {/* 로그인 실패 시 메시지 표시 */}

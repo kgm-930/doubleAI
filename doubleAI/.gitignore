@@ -34,3 +34,4 @@ build/
 
 ### My Select ###
 application.properties
+node_modules
