@@ -1,5 +1,6 @@
 package com.rabu.doubleai.controller;
 
+import com.rabu.doubleai.model.ChatRequest;
 import com.rabu.doubleai.service.ChatGptService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -15,9 +16,8 @@ public class ChatController {
         this.chatGptService = chatGptService;
     }
 
-    // 사용자가 입력한 텍스트를 받아 OpenAI에 전달하고 응답을 반환
     @PostMapping("/ask")
-    public String askChatGpt(@RequestBody String userInput) {
-        return chatGptService.getChatGptResponse(userInput);
+    public String askChatGpt(@RequestBody ChatRequest request) {
+        return chatGptService.getChatGptResponse(request.getInput());
     }
 }

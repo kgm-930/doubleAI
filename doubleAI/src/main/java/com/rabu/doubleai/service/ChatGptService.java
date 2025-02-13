@@ -11,34 +11,31 @@ public class ChatGptService {
     @Value("${openai.key}")
     private String API_KEY;  // OpenAI API Key
 
-    String API_URL = "https://api.openai.com/v1/chat/completions";// OpenAI Chat API 엔드포인트
+    private static final String API_URL = "https://api.openai.com/v1/chat/completions";
 
     public String getChatGptResponse(String userInput) {
         RestTemplate restTemplate = new RestTemplate();
-        String url = "https://api.openai.com/v1/chat/completions";
 
-        // 헤더 설정
+        // HTTP 헤더 설정
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + API_KEY);
+        headers.set("Authorization", "Bearer " + API_KEY.substring(1,API_KEY.length()-2));
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        // 요청 본문 설정
-        String requestBody = "{\n" +
-                "  \"model\": \"gpt-3.5-turbo\",\n" +
-                "  \"messages\": [\n" +
-                "    {\"role\": \"user\", \"content\": \"Hello!\"}\n" +
-                "  ]\n" +
-                "}";
+        String requestBody = String.format(
+                "{\n" +
+                        "  \"model\": \"gpt-3.5-turbo\",\n" +
+                        "  \"messages\": [\n" +
+                        "    {\"role\": \"system\", \"content\": \"You are a helpful assistant.\"},\n" +
+                        "    {\"role\": \"user\", \"content\": \"%s\"}\n" +
+                        "  ]\n" +
+                        "}", userInput);
 
-        // HTTP 엔티티 생성
+        // HTTP 요청 생성
         HttpEntity<String> entity = new HttpEntity<>(requestBody, headers);
 
-        // API 호출
-        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
+        // OpenAI API 호출
+        ResponseEntity<String> response = restTemplate.exchange(API_URL, HttpMethod.POST, entity, String.class);
 
-        System.out.println("Response: " + response.getBody());
-
-        // 응답 본문 반환
         return response.getBody();
     }
 }
