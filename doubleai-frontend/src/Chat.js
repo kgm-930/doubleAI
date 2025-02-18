@@ -1,72 +1,76 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 const Chat = () => {
-    const [input, setInput] = useState("");
-    const [response, setResponse] = useState([]);
-    const navigate = useNavigate(); // 이제 Router 내부에서 사용됨
+    const [inputValue, setInputValue] = useState(""); // 입력값 상태
+    const [messages, setMessages] = useState([]); // 대화 기록 상태
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+        if (!inputValue.trim()) return;
+
+        // 기존 메시지에 사용자 입력 추가
+        setMessages([...messages, { user: "Q", text: inputValue }]);
+
         try {
-            const token = localStorage.getItem("token");
-
-            if (!token) {
-                alert("로그인이 필요합니다.");
-                navigate("/login");
-                return;
-            }
-
-            const res = await fetch("http://localhost:8080/api/chat/ask", {
+            const response = await fetch("http://localhost:8080/api/chat/ask", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
+                    "Authorization": `Bearer ${localStorage.getItem("token")}` // JWT 토큰 필요 시 추가
                 },
-                body: JSON.stringify({
-                    messages: [
-                        { role: "system", content: "당신은 유용한 정보를 제공하는 친절한 AI 챗봇입니다. 질문에 대해 항상 자세하고 정확하며 창의적인 한국어 답변을 제공합니다." },
-                        { role: "user", content: input }
-                    ]
-                }),
+                body: JSON.stringify({ input: inputValue }),
             });
 
-            const data = await res.json();
-            const botAnswer = data.choices[0].message.content; // 한국어 응답
+            if (!response.ok) {
+                throw new Error(`Server Error: ${response.status}`);
+            }
 
-            setResponse((prevResponse) => [...prevResponse, { question: input, answer: botAnswer }]);
+            const data = await response.json();
+            console.log("서버 응답:", data);
+
+            // 화면에 챗봇 응답 추가
+            if (data.response) {
+                setMessages(prevMessages => [
+                    ...prevMessages,
+                    { user: "Q", text: inputValue },
+                    { user: "A", text: data.response }
+                ]);
+            } else {
+                setMessages(prevMessages => [
+                    ...prevMessages,
+                    { user: "Q", text: inputValue },
+                    { user: "A", text: "응답을 가져올 수 없습니다." }
+                ]);
+            }
         } catch (error) {
-            console.error("Error:", error);
+            console.error("API 요청 실패:", error);
+            setMessages(prevMessages => [
+                ...prevMessages,
+                { user: "Q", text: inputValue },
+                { user: "A", text: "응답을 가져올 수 없습니다." }
+            ]);
         }
 
-        setInput("");
+        setInputValue(""); // 입력창 초기화
     };
-
-
 
     return (
         <div>
+            <h1>Double AI Chat</h1>
             <form onSubmit={handleSubmit}>
                 <input
                     type="text"
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
                     placeholder="Ask me anything..."
                 />
                 <button type="submit">Submit</button>
             </form>
-            <div className="response">
-                {response.map((item, index) => (
-                    <div key={index}>
-                        <p>
-                            <strong>Q: </strong>
-                            {item.question}
-                        </p>
-                        <p>
-                            <strong>A: </strong>
-                            {item.answer}
-                        </p>
-                    </div>
+            <div>
+                {messages.map((msg, index) => (
+                    <p key={index}>
+                        <strong>{msg.user}:</strong> {msg.text}
+                    </p>
                 ))}
             </div>
         </div>
