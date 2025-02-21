@@ -8,8 +8,7 @@ const Chat = () => {
         event.preventDefault();
         if (!inputValue.trim()) return;
 
-        // 기존 메시지에 사용자 입력 추가
-        setMessages([...messages, { user: "Q", text: inputValue }]);
+        setMessages(prevMessages => [...prevMessages, { user: "Q", text: inputValue }]);
 
         try {
             const response = await fetch("http://localhost:8080/api/chat/ask", {
@@ -28,27 +27,14 @@ const Chat = () => {
             const data = await response.json();
             console.log("서버 응답:", data);
 
-            // 화면에 챗봇 응답 추가
             if (data.response) {
-                setMessages(prevMessages => [
-                    ...prevMessages,
-                    { user: "Q", text: inputValue },
-                    { user: "A", text: data.response }
-                ]);
+                setMessages(prevMessages => [...prevMessages, { user: "A", text: data.response }]);
             } else {
-                setMessages(prevMessages => [
-                    ...prevMessages,
-                    { user: "Q", text: inputValue },
-                    { user: "A", text: "응답을 가져올 수 없습니다." }
-                ]);
+                setMessages(prevMessages => [...prevMessages, { user: "A", text: "응답을 가져올 수 없습니다." }]);
             }
         } catch (error) {
             console.error("API 요청 실패:", error);
-            setMessages(prevMessages => [
-                ...prevMessages,
-                { user: "Q", text: inputValue },
-                { user: "A", text: "응답을 가져올 수 없습니다." }
-            ]);
+            setMessages(prevMessages => [...prevMessages, { user: "A", text: "응답을 가져올 수 없습니다." }]);
         }
 
         setInputValue(""); // 입력창 초기화
@@ -56,7 +42,6 @@ const Chat = () => {
 
     return (
         <div>
-            <h1>Double AI Chat</h1>
             <form onSubmit={handleSubmit}>
                 <input
                     type="text"
