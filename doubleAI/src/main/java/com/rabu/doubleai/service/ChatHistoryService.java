@@ -1,8 +1,11 @@
 package com.rabu.doubleai.service;
 
 import com.rabu.doubleai.model.ChatHistory;
+import com.rabu.doubleai.model.User;
 import com.rabu.doubleai.repository.ChatHistoryRepository;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class ChatHistoryService {
@@ -13,14 +16,12 @@ public class ChatHistoryService {
         this.chatHistoryRepository = chatHistoryRepository;
     }
 
-    // 대화 기록 저장
-    public void saveChatHistory(String username, String question, String answer) {
-        ChatHistory chatHistory = ChatHistory.builder()
-                .username(username)
-                .question(question)
-                .answer(answer)
-                .build();
-
+    public void saveChatHistory(User user, String question, String answer) {
+        ChatHistory chatHistory = new ChatHistory(user, question, answer);
         chatHistoryRepository.save(chatHistory);
+    }
+
+    public List<ChatHistory> getChatHistory(User user) {
+        return chatHistoryRepository.findByUserOrderByTimestampDesc(user);
     }
 }
