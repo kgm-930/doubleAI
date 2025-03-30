@@ -51,6 +51,12 @@ const Chat = () => {
                 />
                 <button type="submit">Submit</button>
             </form>
+            <button onClick={() => {
+                localStorage.removeItem("token");
+                window.location.href = "/login";
+            }}>
+                로그아웃
+            </button>
             <div>
                 {messages.map((msg, index) => (
                     <p key={index}>

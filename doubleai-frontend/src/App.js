@@ -1,24 +1,20 @@
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./Login";
+import Register from "./Register";
 import Chat from "./Chat";
 
 function App() {
-  return (
-      <Router>
-        <div className="App">
-          <header className="App-header">
-            <h1>Double AI Chat</h1>
-            <nav>
-              <Link to="/login">로그인</Link> | <Link to="/">채팅</Link>
-            </nav>
+    return (
+        <Router>
             <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route path="/" element={<Chat />} />
+                <Route path="/" element={<Login />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/chat" element={<Chat />} />
             </Routes>
-          </header>
-        </div>
-      </Router>
-  );
+        </Router>
+    );
 }
 
 export default App;
