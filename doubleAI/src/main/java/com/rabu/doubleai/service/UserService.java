@@ -31,11 +31,9 @@ public class UserService {
 
     // 로그인 처리
     public String loginUser(User user) {
-        User existingUser = userRepository.findByUsername(user.getUsername());
-        if (existingUser != null && passwordEncoder.matches(user.getPassword(), existingUser.getPassword())) {
-            return "로그인 성공"; // JWT 발급 로직은 컨트롤러에서 처리하거나 별도의 메서드로 분리
-        } else {
-            return "아이디나 패스워드가 틀렸습니다";
-        }
+        return userRepository.findByUsername(user.getUsername())
+                .filter(existingUser -> passwordEncoder.matches(user.getPassword(), existingUser.getPassword()))
+                .map(u -> "로그인 성공")
+                .orElse("아이디나 패스워드가 틀렸습니다");
     }
 }

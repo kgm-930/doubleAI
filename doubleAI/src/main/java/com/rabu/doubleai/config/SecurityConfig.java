@@ -30,7 +30,7 @@ public class SecurityConfig {
     // 특정 URL은 보안 제외
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
-        return (web) -> web.ignoring().requestMatchers("/api/user/register", "/api/user/login","/api/chat/ask");
+        return (web) -> web.ignoring().requestMatchers("/api/users/register", "/api/user/login","/api/chat/ask");
     }
 
     // HTTP 보안 설정
@@ -38,7 +38,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeRequests()
-                .requestMatchers("/api/user/register", "/api/user/login").permitAll()
+                .requestMatchers("/api/users/register", "/api/users/login").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)  // JwtTokenFilter를 필터 체인에 추가
