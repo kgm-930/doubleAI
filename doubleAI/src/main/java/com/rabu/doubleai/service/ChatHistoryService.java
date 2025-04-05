@@ -16,12 +16,12 @@ public class ChatHistoryService {
         this.chatHistoryRepository = chatHistoryRepository;
     }
 
-    public void saveChatHistory(User user, String question, String answer) {
-        ChatHistory chatHistory = new ChatHistory(user, question, answer);
-        chatHistoryRepository.save(chatHistory);
+    public void saveChat(User user, String question, String answer) {
+        ChatHistory history = new ChatHistory(user, question, answer);
+        chatHistoryRepository.save(history);
     }
 
-    public List<ChatHistory> getChatHistory(User user) {
-        return chatHistoryRepository.findByUserOrderByTimestampDesc(user);
+    public List<ChatHistory> getHistory(User user) {
+        return chatHistoryRepository.findByUserOrderByTimestampAsc(user);
     }
 }

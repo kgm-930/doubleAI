@@ -58,4 +58,5 @@ public class ChatController {
             return ResponseEntity.status(500).body(Map.of("error", "JSON parsing error"));
         }
     }
+    
 }
