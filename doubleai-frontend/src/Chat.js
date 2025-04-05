@@ -1,62 +1,80 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 const Chat = () => {
-    const [inputValue, setInputValue] = useState(""); // 입력값 상태
-    const [messages, setMessages] = useState([]); // 대화 기록 상태
+    const [inputValue, setInputValue] = useState("");
+    const [messages, setMessages] = useState([]);
 
-    const handleSubmit = async (event) => {
-        event.preventDefault();
+    useEffect(() => {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+            alert("로그인이 필요합니다.");
+            window.location.href = "/login";
+            return;
+        }
+
+        fetch("http://localhost:8080/api/chat/history", {
+            headers: {
+                "Authorization": `Bearer ${token}`,
+            },
+        })
+            .then(res => {
+                if (!res.ok) throw new Error("불러오기 실패");
+                return res.json();
+            })
+            .then(data => {
+                // 기록을 Q → A 순서로 변환
+                const formatted = data.flatMap(item => [
+                    { user: "Q", text: item.question },
+                    { user: "A", text: item.answer },
+                ]);
+                setMessages(formatted);
+            })
+            .catch(err => {
+                console.error("대화 기록 불러오기 실패:", err);
+            });
+    }, []);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
         if (!inputValue.trim()) return;
 
-        setMessages(prevMessages => [...prevMessages, { user: "Q", text: inputValue }]);
+        const token = localStorage.getItem("token");
+
+        // 먼저 사용자 메시지를 보여줌
+        setMessages(prev => [...prev, { user: "Q", text: inputValue }]);
 
         try {
-            const response = await fetch("http://localhost:8080/api/chat/ask", {
+            const res = await fetch("http://localhost:8080/api/chat/ask", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${localStorage.getItem("token")}` // JWT 토큰 필요 시 추가
+                    "Authorization": `Bearer ${token}`,
                 },
                 body: JSON.stringify({ input: inputValue }),
             });
 
-            if (!response.ok) {
-                throw new Error(`Server Error: ${response.status}`);
-            }
+            const data = await res.json();
 
-            const data = await response.json();
-            console.log("서버 응답:", data);
-
-            if (data.response) {
-                setMessages(prevMessages => [...prevMessages, { user: "A", text: data.response }]);
-            } else {
-                setMessages(prevMessages => [...prevMessages, { user: "A", text: "응답을 가져올 수 없습니다." }]);
-            }
-        } catch (error) {
-            console.error("API 요청 실패:", error);
-            setMessages(prevMessages => [...prevMessages, { user: "A", text: "응답을 가져올 수 없습니다." }]);
+            setMessages(prev => [...prev, { user: "A", text: data.response }]);
+        } catch (err) {
+            console.error("API 요청 실패:", err);
+            setMessages(prev => [...prev, { user: "A", text: "응답 오류" }]);
         }
 
-        setInputValue(""); // 입력창 초기화
+        setInputValue("");
+    };
+
+    const handleLogout = () => {
+        localStorage.removeItem("token");
+        window.location.href = "/login";
     };
 
     return (
         <div>
-            <form onSubmit={handleSubmit}>
-                <input
-                    type="text"
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    placeholder="Ask me anything..."
-                />
-                <button type="submit">Submit</button>
-            </form>
-            <button onClick={() => {
-                localStorage.removeItem("token");
-                window.location.href = "/login";
-            }}>
-                로그아웃
-            </button>
+            <h2>Double AI Chat</h2>
+            <button onClick={handleLogout}>로그아웃</button>
+
             <div>
                 {messages.map((msg, index) => (
                     <p key={index}>
@@ -64,6 +82,16 @@ const Chat = () => {
                     </p>
                 ))}
             </div>
+
+            <form onSubmit={handleSubmit}>
+                <input
+                    type="text"
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    placeholder="메시지를 입력하세요"
+                />
+                <button type="submit">전송</button>
+            </form>
         </div>
     );
 };

@@ -6,6 +6,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -30,19 +32,24 @@ public class SecurityConfig {
     // 특정 URL은 보안 제외
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
-        return (web) -> web.ignoring().requestMatchers("/api/users/register", "/api/user/login","/api/chat/ask");
+        return (web) -> web.ignoring().requestMatchers(
+                "/api/users/register", "/api/users/login"
+        );
     }
+
 
     // HTTP 보안 설정
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtTokenFilter jwtTokenFilter) throws Exception {
         http
-                .authorizeRequests()
-                .requestMatchers("/api/users/register", "/api/users/login").permitAll()
-                .anyRequest().authenticated()
-                .and()
-                .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)  // JwtTokenFilter를 필터 체인에 추가
-                .csrf().disable();  // CSRF 비활성화 (필요시 수정)
+                .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/users/register", "/api/users/login").permitAll()
+                        .anyRequest().authenticated()
+                )
+                .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
+
 
         return http.build();
     }
