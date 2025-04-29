@@ -79,4 +79,15 @@ public class ChatController {
 
         return ResponseEntity.ok(response);
     }
+
+    @DeleteMapping("/delete")
+    public ResponseEntity<Void> deleteChatHistory(Principal principal) {
+        User user = userRepository.findByUsername(principal.getName()).orElse(null);
+        if (user == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        chatHistoryService.deleteHistory(user);
+        return ResponseEntity.ok().build();
+    }
 }

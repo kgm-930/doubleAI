@@ -8,4 +8,6 @@ import java.util.List;
 
 public interface ChatHistoryRepository extends JpaRepository<ChatHistory, Long> {
     List<ChatHistory> findByUserOrderByTimestampAsc(User user);
+
+    void deleteByUser(User user);
 }

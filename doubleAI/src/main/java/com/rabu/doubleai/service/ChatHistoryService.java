@@ -3,6 +3,7 @@ package com.rabu.doubleai.service;
 import com.rabu.doubleai.model.ChatHistory;
 import com.rabu.doubleai.model.User;
 import com.rabu.doubleai.repository.ChatHistoryRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,4 +25,10 @@ public class ChatHistoryService {
     public List<ChatHistory> getHistory(User user) {
         return chatHistoryRepository.findByUserOrderByTimestampAsc(user);
     }
+
+    @Transactional
+    public void deleteHistory(User user) {
+        chatHistoryRepository.deleteByUser(user);
+    }
+
 }

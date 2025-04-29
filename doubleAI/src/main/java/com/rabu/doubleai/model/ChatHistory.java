@@ -18,8 +18,12 @@ public class ChatHistory {
     @ManyToOne
     private User user;
 
+    @Column(columnDefinition = "TEXT")
     private String question;
+
+    @Column(columnDefinition = "TEXT")
     private String answer;
+
     private LocalDateTime timestamp = LocalDateTime.now();
 
     public ChatHistory() {}

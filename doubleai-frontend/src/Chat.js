@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, {useState, useEffect, useRef} from "react";
 import "./Chat.css"; // 스타일 분리
 
 const Chat = () => {
@@ -16,13 +16,13 @@ const Chat = () => {
         }
 
         fetch("http://localhost:8080/api/chat/history", {
-            headers: { Authorization: `Bearer ${token}` },
+            headers: {Authorization: `Bearer ${token}`},
         })
             .then(res => res.json())
             .then(data => {
                 const formatted = data.flatMap(d => [
-                    { user: "Q", text: d.question },
-                    { user: "A", text: d.answer },
+                    {user: "Q", text: d.question},
+                    {user: "A", text: d.answer},
                 ]);
                 setMessages(formatted);
             });
@@ -44,7 +44,7 @@ const Chat = () => {
         if (!inputValue.trim()) return;
 
         const token = localStorage.getItem("token");
-        setMessages(prev => [...prev, { user: "Q", text: inputValue }]);
+        setMessages(prev => [...prev, {user: "Q", text: inputValue}]);
 
         try {
             const res = await fetch("http://localhost:8080/api/chat/ask", {
@@ -53,12 +53,12 @@ const Chat = () => {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({ input: inputValue }),
+                body: JSON.stringify({input: inputValue}),
             });
             const data = await res.json();
-            setMessages(prev => [...prev, { user: "A", text: data.response }]);
+            setMessages(prev => [...prev, {user: "A", text: data.response}]);
         } catch {
-            setMessages(prev => [...prev, { user: "A", text: "응답 오류" }]);
+            setMessages(prev => [...prev, {user: "A", text: "응답 오류"}]);
         }
 
         setInputValue("");
@@ -69,18 +69,52 @@ const Chat = () => {
         window.location.href = "/login";
     };
 
+    const handleDeleteChat = async () => {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        if (!window.confirm("정말 대화 기록을 삭제하시겠습니까?")) {
+            return;
+        }
+
+        try {
+            const res = await fetch("http://localhost:8080/api/chat/delete", {
+                method: "DELETE",
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            });
+
+            if (res.ok) {
+                setMessages([]); // 삭제 후 채팅창 비우기
+            } else {
+                alert("대화 삭제 실패");
+            }
+        } catch (error) {
+            console.error("대화 삭제 에러:", error);
+            alert("서버 오류 발생");
+        }
+    };
+
     return (
         <div className="chat-container">
             <h2>Double AI Chat</h2>
             <button className="logout-btn" onClick={handleLogout}>로그아웃</button>
+            <button className="delete-btn" onClick={handleDeleteChat}>대화 삭제</button>
 
             <div className="chat-box">
                 {messages.map((msg, idx) => (
                     <div key={idx} className={`bubble ${msg.user === "Q" ? "question" : "answer"}`}>
-                        <span>{msg.text}</span>
+                        {msg.text.split('\n').map((line, i) => (
+                            <span key={i}>
+                {line}
+                                <br/>
+            </span>
+                        ))}
                     </div>
                 ))}
-                <div ref={chatEndRef} />
+
+                <div ref={chatEndRef}/>
             </div>
 
             <form className="chat-form" onSubmit={handleSubmit}>

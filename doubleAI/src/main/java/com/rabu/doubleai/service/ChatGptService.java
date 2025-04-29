@@ -28,7 +28,7 @@ public class ChatGptService {
             Map<String, Object> requestBody = Map.of(
                     "model", "gpt-3.5-turbo",
                     "messages", new Object[]{Map.of("role", "user", "content", userMessage)},
-                    "max_tokens", 100
+                    "max_tokens", 2048
             );
 
             HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
